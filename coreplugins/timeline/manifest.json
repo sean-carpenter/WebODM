@@ -1,0 +1,13 @@
+{
+	"name": "Timeline",
+	"webodmMinVersion": "4.0.0",
+	"description": "Step through a project's flights by date on the map, e.g. to follow a construction site over time",
+	"version": "1.0.0",
+	"author": "Draerial",
+	"email": "",
+	"repository": "https://github.com/sean-carpenter/WebODM",
+	"tags": ["timeline", "construction", "progress", "time series"],
+	"homepage": "https://github.com/sean-carpenter/WebODM",
+	"experimental": false,
+	"deprecated": false
+}
