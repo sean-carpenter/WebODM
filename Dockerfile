@@ -26,6 +26,11 @@ WORKDIR $WORKDIR
 # You can manually prepend every RUN script with `set -ex` too.
 SHELL ["sh", "-exc"]
 
+# Optional extra CA certificates for builds behind a TLS-inspecting proxy.
+# Dockerfile always matches, so the COPY succeeds when .build-ca/ is empty.
+COPY Dockerfile .build-ca/*.crt /tmp/build-ca/
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt PIP_CERT=/etc/ssl/certs/ca-certificates.crt NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
+
 RUN <<EOT
     # Common system configuration, should change very infrequently
     # Set timezone to UTC
@@ -43,6 +48,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     # Build-time dependencies
     apt-get -qq update
     apt-get install -y --no-install-recommends curl ca-certificates gnupg cmake g++
+    # Optional extra CA (e.g. a corporate TLS-inspecting proxy): drop .crt files in .build-ca/
+    find /tmp/build-ca -name '*.crt' -exec cp {} /usr/local/share/ca-certificates/ \;
+    update-ca-certificates
     curl -fsSL 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xf23c5a6cf475977595c89f51ba6932366a755776' | gpg --dearmor -o /etc/apt/trusted.gpg.d/deadsnakes.gpg
     echo "deb http://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu $RELEASE_CODENAME main" > /etc/apt/sources.list.d/deadsnakes.list
     # Node.js deb source
@@ -149,6 +157,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     # Run-time dependencies
     apt-get -qq update
     apt-get install -y --no-install-recommends curl ca-certificates gnupg
+    # Optional extra CA (e.g. a corporate TLS-inspecting proxy): drop .crt files in .build-ca/
+    find /tmp/build-ca -name '*.crt' -exec cp {} /usr/local/share/ca-certificates/ \;
+    update-ca-certificates
     curl -fsSL 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xf23c5a6cf475977595c89f51ba6932366a755776' | gpg --dearmor -o /etc/apt/trusted.gpg.d/deadsnakes.gpg
     echo "deb http://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu $RELEASE_CODENAME main" > /etc/apt/sources.list.d/deadsnakes.list
     # Node.js deb source
